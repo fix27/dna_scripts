@@ -1,27 +1,22 @@
 @echo off
+
+REM Пережатие .vcf.gz файлов
+REM Требуются bgzip.exe (из htslib) и gzip.exe (например, из GnuWin32 или Cygwin)
+
 setlocal enabledelayedexpansion
 
-echo Пересжатие обычных .gz ...
+for %%F in (*.vcf.gz) do (
+    echo Обрабатываем: %%F
 
-for /r "%TMPDIR%" %%F in (*.gz) do (
-    set "fname=%%~nxF"
-    set "ext=%%~xF"
-    set "name=%%~nF"
-    set "path=%%~dpF"
-
-    rem пропускаем vcf.gz, fa.gz, fasta.gz, bed.gz
-    if /i not "%%~nxF"=="*.vcf.gz" if /i not "%%~nxF"=="*.fa.gz" if /i not "%%~nxF"=="*.fasta.gz" if /i not "%%~nxF"=="*.bed.gz" (
-        echo   Пересжимаю: %%F
-        rem распаковать
-        7z x -y "%%F" -o"%path%" >nul
-        del "%%F"
-
-        rem снова упаковать в gzip с макс. сжатием
-        7z a -tgzip -mx=9 "%path%!name!.gz" "%path%!name!" >nul
-
-        rem удалить временный распакованный файл
-        del "%path%!name!"
+    REM Проверим, похоже ли содержимое на VCF
+    gzip -cd "%%F" | findstr /B "##" >nul 2>&1
+    if !errorlevel! == 0 (
+        echo  -> Похоже на VCF, сжатый bgzip. Пересжимаем через bgzip...
+        bgzip -@ 4 -l 9 -c "%%F" > "%%~nF.repacked.vcf.gz"
+    ) else (
+        echo  -> Обычный .gz. Пересжимаем через gzip -9...
+        gzip -c -9 < "%%F" > "%%~nF.repacked.vcf.gz"
     )
 )
 
-echo Готово.
+echo Готово!
