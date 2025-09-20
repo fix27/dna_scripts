@@ -14,7 +14,7 @@ for %%F in (*.vcf.gz) do (
 )
 for %%F in (*.vcf) do (
 
-        bgzip -l 9 -c "%%F" > "%%~nF.vcf.gz"
+    bgzip -l 9 -c "%%F" > "%%~nF.vcf.gz"
 	bgzip -r "%%~nF.vcf.gz"
 	tabix -p vcf "%%~nF.vcf.gz"
 )
