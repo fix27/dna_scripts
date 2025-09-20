@@ -7,9 +7,7 @@ setlocal enabledelayedexpansion
 
 for %%F in (*.vcf.gz) do (
     echo Обрабатываем: %%F
-
-    REM Проверим, похоже ли содержимое на VCF
-        echo  -> Похоже на VCF, сжатый bgzip. Пересжимаем через bgzip...
+    REM  Пересжимаем через bgzip...
 	bgzip -d "%%F"
 )
 for %%F in (*.vcf) do (
